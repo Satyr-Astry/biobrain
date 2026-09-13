@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# 运行时产物（大脑状态/记忆/日志）
+*.log
+*.jsonl
+*.pkl
+brain_inbox.txt
+brain_outbox.jsonl
+STOP_ITERATE
+agent_memory.json
+agent_state.json
+agent_log.jsonl
+bio_brain_state.json
+iterate_progress.json
+iterate_run.log
+batch_learn_progress.json
+auto_evolve_results.json
+
+# 模型权重
+models/*.safetensors
+models/*.gguf
+models/*.bin
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+Thumbs.db
+Desktop.ini
