@@ -218,4 +218,4 @@ BioBrain demonstrates a path distinct from the train-then-use paradigm: **learni
 
 ---
 
-*仿生AI项目设计 · BioBrain Project · 2026-09 · F:\DESKTOP\AI架构与推理设计\仿生AI项目设计*
+*仿生AI项目设计 · BioBrain Project · 2026-09 · Author: Satyr_Astry*
