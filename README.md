@@ -16,7 +16,18 @@
 | **Memory** | BM25 + semantic hybrid retrieval with confidence gating |
 | **Language** | LLM language area (frozen weights, commanded by the cognitive layer) |
 | **API** | OpenAI-compatible (`POST /v1/chat/completions`, works with any client / Hermes Agent) |
-| **Docs** | [Paper (EN/中文)](paper/biobrain_paper.md) · [Engineering spec v7.4 (中文)](docs/工程规范_v7.3.md) |
+| **Docs** | [Paper (EN/中文)](paper/biobrain_paper.md) · [Architecture Book v3.4 (中文)](docs/01_架构/总架构书.md) |
+
+### Current Health (v3.4, verified)
+
+| Metric | Result |
+|---|---|
+| Regression tests | **37 passed** (deterministic across `PYTHONHASHSEED` 0/1/2/5/12345) |
+| Sensory reachability (scope B: incl. key bridge) | **64/64** |
+| Motor neurons carrying information | **6/6** |
+| Functional-library contamination | **0.000** |
+| Whole-tick speedup | **7.33×** (13.29× on BIND), bit-identical routing **208/208** |
+| Save/load round-trip error | **~1e-8**, no amnesia across restart |
 
 ### Quick Start
 
@@ -120,7 +131,22 @@ repo/
 | **记忆** | BM25+语义混合检索 + 置信度门控 |
 | **语言** | LLM 语言区（权重冻结，受认知层指挥） |
 | **接口** | OpenAI 兼容（任意客户端 / Hermes Agent 可直接调用） |
-| **文档** | [论文（中英）](paper/biobrain_paper.md) · [工程规范 v7.4](docs/工程规范_v7.3.md) |
+| **文档** | [论文（中英）](paper/biobrain_paper.md) · [总架构书 v3.4](docs/01_架构/总架构书.md)（唯一架构权威） |
+
+### 当前健康指标（v3.4，已实测）
+
+| 指标 | 实测值 |
+|---|---|
+| 回归测试 | **37 passed**（`PYTHONHASHSEED` 0/1/2/5/12345 五种全部通过） |
+| 感觉端可达率（口径 B：含 key 桥接） | **64/64** |
+| 运动端携带信息神经元 | **6/6** |
+| 功能库污染 | **0.000** |
+| 整 tick 加速 | **7.33×**（BIND **13.29×**），路由位级一致 **208/208** |
+| 存盘往返误差 | **~1e-8**，重启不失忆 |
+
+> 本轮修复（v3.1~v3.4）：真存盘分层持久化（`persistence.py`）· 修断路（`self_sensory`/`inter` 尾部入束）· einsum 向量化 + 消循环不变量 · 修 `PYTHONHASHSEED` 暗雷（`hash(modality)` → md5 确定性种子）。
+> 复现纪律：**任何位级等价断言必须加 `PYTHONHASHSEED=0` 前缀**，否则会产出假失败。
+> 实测报告见 [docs/04_实测与诊断/](docs/04_实测与诊断/)。
 
 ### 快速开始
 

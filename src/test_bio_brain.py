@@ -458,7 +458,7 @@ def test_server_sleep_and_state():
 
 def test_server_save_load():
     """服务层：存盘/加载往返"""
-    import os, tempfile
+    import os, tempfile, shutil, glob
     path = os.path.join(tempfile.gettempdir(), "bio_test_state.json")
     b = BioBrain(seed=1, state_path=path)
     for _ in range(5):
@@ -468,7 +468,123 @@ def test_server_save_load():
     ok = b2.load()
     assert ok, "服务层回归：加载失败"
     assert b2.self_model.competence("coding") > 0.6, "服务层回归：技能未恢复"
-    os.remove(path)
+    # ★v3.1：存盘现在是目录，清理时兼容两种形态
+    _cleanup_state(path)
+
+
+def _cleanup_state(path):
+    """清理状态（兼容"单文件"与"目录"两种形态）。"""
+    import os, shutil, glob
+    if os.path.isfile(path):
+        os.remove(path)
+    for d in glob.glob(os.path.splitext(path)[0] + ".brainstate"):
+        if os.path.isdir(d):
+            shutil.rmtree(d, ignore_errors=True)
+
+
+# ============================================================
+# C17: 真存盘往返（R1 验收）—— 神经状态与记忆库必须完整恢复
+# ============================================================
+def test_c17_full_state_roundtrip():
+    """C17: save/load 必须完整往返神经状态与记忆库（修 R1）。
+
+    ★背景：原 save() 只存元数据（含一个 base_sum 标量），
+    完全没存 base/plasticity/soma/axon/dynamics/记忆库内容
+    → 重启即失忆（架构书 §8.2 R1）。
+    """
+    import os, tempfile, shutil, glob
+    import numpy as np
+    path = os.path.join(tempfile.gettempdir(), "bio_c17_state.json")
+    _cleanup_state(path)
+
+    b = BioBrain(seed=1, state_path=path)
+    # 跑起来，产生真实状态
+    for t in ["猫", "狗是哺乳动物", "注意力机制"]:
+        b.think(t)
+    # 快照（save 前）
+    snap = {}
+    for i, n in b.ns.neurons.items():
+        snap[i] = dict(base=np.array(n.base, copy=True),
+                       soma=np.array(n.soma, copy=True),
+                       axon=np.array(n.axon, copy=True),
+                       activity=float(n.activity))
+    tract_snap = {t: np.array(tr.dynamics, copy=True) for t, tr in b.ns.tracts.items()}
+    mem_before = len([e for e in _all_experiences(b)])
+
+    b.save()
+
+    # 新大脑加载
+    b2 = BioBrain(seed=1, state_path=path)
+    ok = b2.load()
+    assert ok, "C17：加载失败"
+
+    # S1: 神经状态逐元素一致
+    for i, s in snap.items():
+        n2 = b2.ns.neurons.get(i)
+        assert n2 is not None, f"C17：神经元 {i} 未恢复"
+        for f in ["base", "soma", "axon"]:
+            d = float(np.abs(np.asarray(getattr(n2, f)) - s[f]).max())
+            assert d < 1e-5, f"C17：神经元 {i}.{f} 往返误差 {d:.6f}"
+        assert abs(float(n2.activity) - s["activity"]) < 1e-5, f"C17：activity 未恢复"
+
+    # S2: 连接恢复
+    for t, arr in tract_snap.items():
+        tr2 = b2.ns.tracts.get(t)
+        assert tr2 is not None, f"C17：束 {t} 未恢复"
+        d = float(np.abs(np.asarray(tr2.dynamics) - arr).max())
+        assert d < 1e-5, f"C17：束 {t}.dynamics 往返误差 {d:.6f}"
+
+    # S3: 记忆库内容恢复
+    mem_after = len([e for e in _all_experiences(b2)])
+    assert mem_after >= mem_before, (
+        f"C17：记忆库未恢复（save 前 {mem_before} 条，load 后 {mem_after} 条）")
+
+    # S4: 注意力权重恢复
+    assert abs(np.linalg.norm(b2.ns.W_q) - np.linalg.norm(b.ns.W_q)) < 1e-4, \
+        "C17：投影矩阵 W_q 未恢复"
+
+    # S5: 端到端 —— 加载后思考结果一致
+    r1 = b.think("猫")
+    r2 = b2.think("猫")
+    assert abs(r1["convergence"] - r2["convergence"]) < 0.2, \
+        f"C17：加载后思考结果漂移（{r1['convergence']} vs {r2['convergence']}）"
+
+    _cleanup_state(path)
+
+
+def _all_experiences(b):
+    """取出记忆库里全部经验（兼容不同内部结构）。"""
+    buf = getattr(b, "buffer", None)
+    if buf is None:
+        return []
+    out = []
+    for attr in ["items", "entries", "_items", "buffer", "_buffer"]:
+        v = getattr(buf, attr, None)
+        if isinstance(v, list):
+            out.extend(v)
+    for attr in ["by_id", "_by_id"]:
+        v = getattr(buf, attr, None)
+        if isinstance(v, dict):
+            out.extend(v.values())
+    return out
+
+
+def test_c18_save_creates_full_artifacts():
+    """C18: 存盘必须产出完整的分层文件（不是只有一个 json）。"""
+    import os, tempfile
+    path = os.path.join(tempfile.gettempdir(), "bio_c18_state.json")
+    _cleanup_state(path)
+    b = BioBrain(seed=1, state_path=path)
+    b.think("测试存盘")
+    d = b.save()
+    assert os.path.isdir(d), f"C18：存盘未产出目录（{d}）"
+    for f in ["meta.json", "neurons.npz", "tracts.npz", "libraries.json",
+              "memory.jsonl", "attn.npz"]:
+        p = os.path.join(d, f)
+        assert os.path.isfile(p), f"C18：缺少 {f}"
+        assert os.path.getsize(p) > 0, f"C18：{f} 为空"
+    _cleanup_state(path)
+
 
 
 def test_server_observe():
@@ -477,6 +593,100 @@ def test_server_observe():
     b = BioBrain(seed=1)
     r = b.observe(image_vec=np.zeros(16), text="猫", source="oracle")
     assert r["ignited"] > 0, "服务层回归：观察未点火"
+
+
+# ============================================================
+# C14: compute 数据通路必须真的活着（soma/axon 非零）
+# ============================================================
+def test_c14_compute_is_alive():
+    """C14: 计算内核(ALG-0)的产物 soma/axon 必须非零。
+
+    ★背景（2026-09-18 重大缺陷）：原实现中 soma ← f(axon) 而 axon ← tanh(soma)，
+    互为输入形成**零不动点陷阱** → 全部神经元的 soma/axon 恒为 0，
+    compute() 完全空转，但只测 activity 的诊断完全看不出来。
+
+    本测试专门断言「compute 的产物非零」，防止此类沉默缺陷再次出现。
+    """
+    import numpy as np
+    b = BioBrain(seed=1)
+    ign = b.sensory_symbol.ignite(b._encode_text("猫"), b.ns)
+    b.active |= set(ign["ignited"])
+    b.run_ticks(12)
+    soma_max = max(np.linalg.norm(n.soma) for n in b.ns.neurons.values())
+    axon_max = max(np.linalg.norm(n.axon) for n in b.ns.neurons.values())
+    assert soma_max > 0.01, (
+        f"C14 回归：compute 空转 —— soma 恒为 0 (max={soma_max:.4f})。"
+        f"检查阶段A 的输入信号是否形成零不动点。")
+    assert axon_max > 0.01, (
+        f"C14 回归：compute 空转 —— axon 恒为 0 (max={axon_max:.4f})。")
+
+
+# ============================================================
+# C15: subtick 相位读写分离（BIND 只读）
+# ============================================================
+def test_c15_bind_is_readonly():
+    """C15: BIND 相位必须只读 —— 不修改任何神经元状态。
+
+    架构书 §6.2：BIND 只产 attn_out，INTEGRATE 才写 soma。
+    这是消除"同 tick 自反馈"的关键约束。
+    """
+    import hashlib
+    import numpy as np
+    b = BioBrain(seed=1)
+    ign = b.sensory_symbol.ignite(b._encode_text("测试"), b.ns)
+    b.active |= set(ign["ignited"])
+    b.run_ticks(8)
+
+    def soma_hash(ns):
+        h = hashlib.md5()
+        for i in sorted(ns.neurons):
+            h.update(ns.neurons[i].soma.tobytes())
+        return h.hexdigest()
+
+    active = [i for i in b.active if i in b.ns.neurons]
+    before = soma_hash(b.ns)
+    b.ns._phase_bind(active)
+    after = soma_hash(b.ns)
+    assert before == after, "C15 回归：BIND 相位篡改了 soma（应只读）"
+    assert len(b.ns._attn_out) > 0, "C15 回归：BIND 未产出 attn_out"
+
+
+# ============================================================
+# C16: 交叉注意力多头必须非退化
+# ============================================================
+def test_c16_multihead_not_degenerate():
+    """C16: N_HEADS 个头必须产生不同的注意力分布（否则多头无意义）。"""
+    import numpy as np
+    import bio_brain as bb
+    b = BioBrain(seed=1)
+    ign = b.sensory_symbol.ignite(b._encode_text("注意力机制"), b.ns)
+    b.active |= set(ign["ignited"])
+    b.run_ticks(8)
+
+    d_head = max(1, bb.D_SOMA // bb.N_HEADS)
+    diff_neurons = 0
+    checked = 0
+    for i in list(b.active)[:8]:
+        n = b.ns.neurons.get(i)
+        if n is None or np.linalg.norm(n.soma) < 1e-8:
+            continue
+        checked += 1
+        picks = []
+        for h in range(bb.N_HEADS):
+            lo, hi = h * d_head, (h + 1) * d_head
+            q = n.soma[lo:hi]
+            sc = []
+            for tid, tr in b.ns.tracts.items():
+                kv = tr.key[lo:hi]
+                c = float(np.dot(q, kv)) / (np.linalg.norm(q)*np.linalg.norm(kv)+1e-8)
+                sc.append((c, tid))
+            sc.sort(reverse=True)
+            picks.append(tuple(tid for _, tid in sc[:bb.ROUTE_K]))
+        if len(set(picks)) > 1:
+            diff_neurons += 1
+    assert checked > 0, "C16 回归：无可用神经元（soma 全零？见 C14）"
+    assert diff_neurons > 0, (
+        f"C16 回归：{checked} 个神经元的所有注意力头选择完全相同 → 多头退化")
 
 
 if __name__ == "__main__":
