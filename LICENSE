@@ -1,21 +1,222 @@
-MIT License
+Charity-Clause Source Available License, Version 1.0
+慈善条款源可用许可证 1.0 版
+(简称 / Abbreviation: CCSAL-1.0)
 
-Copyright (c) 2026 Satyr_Astry
+Copyright (c) 2026  Satyr_Astry
+All rights reserved. / 保留所有权利。
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+================================================================
+PREFACE / 前言
+================================================================
+This license is adapted from the MIT License. It retains all
+permissive terms of MIT and adds one additional clause: the
+"Charity Clause" (Section 4). Non-commercial users enjoy exactly
+the same rights as under the MIT License. Commercial users are
+subject to the charity contribution obligation.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+本许可证基于 MIT 许可证改写，在保留 MIT 全部宽松条款的基础上，
+额外增加一条「慈善回馈条款」（见第 4 条）。非商用使用者与 MIT
+许可证下的使用者享有完全相同的权利；商用使用者则须履行慈善回馈
+义务。
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+[NAMING NOTE / 命名说明]
+This license is named "Source Available" rather than "Open
+Source" because it contains a use restriction (the charity
+obligation for commercial users), which is not compatible with
+the OSI Open Source Definition (which forbids discrimination
+against fields of endeavor). The name is therefore accurate and
+unambiguous.
+本许可证命名为「源可用」（Source Available）而非「开源」
+（Open Source），因为它含有一项使用条件（对商用者的慈善回馈
+义务），与 OSI 开源定义（禁止歧视使用领域）不相容。此命名
+名实相符，无歧义。
+
+================================================================
+1. GRANT OF LICENSE / 许可授予
+================================================================
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions.
+
+在符合下列全部条件的前提下，任何获得本软件及其关联文档文件
+（以下合称"本软件"）副本的人，均被免费授予不可撤销的权利，
+可以不受限制地处理本软件，包括但不限于：使用、复制、修改、
+合并、发布、分发、再许可及/或销售本软件的副本，并可允许获得
+本软件的人这样做。
+
+================================================================
+2. RETENTION OF NOTICES / 保留声明
+================================================================
+The above copyright notice, this full license text, and the
+Charity Clause (Section 4) shall be included in all copies or
+substantial portions of the Software. No term of this license
+may be removed, modified, or concealed.
+
+上述版权声明、本许可证全文、以及「慈善回馈条款」（第 4 条）
+必须包含在本软件的所有副本或实质性部分中。不得删除、修改或
+隐藏本许可证的任何条款。
+
+================================================================
+3. DISCLAIMER OF WARRANTY / 免责声明
+================================================================
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+本软件按"原样"提供，不附带任何形式的明示或默示担保，包括但
+不限于对适销性、特定用途适用性及非侵权的担保。在任何情况下，
+作者或版权持有人均不对任何索赔、损害或其他责任负责，无论是
+在合同诉讼、侵权行为或其他情况下，由本软件或本软件的使用或
+其他交易引起的或与之相关的。
+
+================================================================
+4. CHARITY CLAUSE (IMPORTANT — ADDITIONAL TO MIT)
+   慈善回馈条款（重要 · 非 MIT 附加条款）
+================================================================
+
+4.1 SCOPE / 适用范围
+    Any individual or entity that uses the Software (or a
+    modified version or derivative work thereof) for any
+    "Commercial Purpose" is subject to this Section.
+
+    任何将本软件（或其修改版、衍生作品）用于「商业用途」的
+    个人或实体，均适用本条。
+
+4.2 DEFINITION OF "COMMERCIAL PURPOSE" / 「商业用途」的定义
+    Including but not limited to: selling, renting, or charging
+    a license fee for the Software as a product or part of a
+    product; providing the Software as a paid service; using the
+    Software internally within a for-profit organization to
+    support its profit-making activities; using the Software
+    for the purpose of sales, advertising, promotion, or
+    obtaining commercial benefit.
+
+    包括但不限于：将本软件作为产品或产品的一部分出售、出租、
+    许可收费；将本软件作为付费服务提供；在盈利性组织内部使用
+    本软件以支持其营利活动；将本软件用于销售、广告、推广或
+    获取商业利益的目的。
+
+4.3 CHARITY CONTRIBUTION OBLIGATION / 慈善回馈义务
+    A Commercial User shall donate not less than 1% (one
+    percent) of the "Attributable Net Proceeds" obtained
+    through its use of the Software to a duly registered
+    charitable organization, or apply such amount to a
+    recognized public-interest charitable cause.
+
+    商业使用者须将因使用本软件而获得的「相关净收益」的
+    不低于 1%（百分之一），捐赠给依法注册的公益慈善
+    组织，或用于公认的公益慈善事业。
+
+    Attributable Net Proceeds = revenue attributable, directly
+    or indirectly, to the Software, minus direct costs
+    reasonably incurred in generating such revenue.
+
+    相关净收益 = 直接或间接归因于本软件的营业收入
+                减去为该部分收入所合理发生的直接成本。
+
+4.4 MANNER OF PERFORMANCE / 履行方式
+    (a) The recipient must be a legally established non-profit
+        charitable institution, public-interest foundation, or
+        a recognized public-interest cause such as education,
+        healthcare, environmental protection, poverty relief,
+        or disaster relief;
+    (b) The donation may take the form of money, goods of
+        equivalent value, or unpaid services;
+    (c) The donation must be completed within 12 months after
+        the end of each fiscal year;
+    (d) The Commercial User shall disclose its fulfillment of
+        the charitable donation in a reasonable manner through
+        its public channels (website, documentation, or product
+        description).
+
+    (a) 捐赠对象须为依法设立的非营利慈善机构、公益基金会，
+        或用于教育、医疗、环保、扶贫、救灾等公认公益事业；
+    (b) 捐赠可采取货币、等值物资或无偿服务的形式；
+    (c) 捐赠行为应在每个会计年度结束后 12 个月内完成；
+    (d) 商业使用者应在其公开渠道（网站、文档或产品说明）
+        以合理方式披露其慈善捐赠的履行情况。
+
+4.5 SMALL-SCALE EXEMPTION / 规模豁免
+    A micro Commercial User whose annual revenue is less than
+    CNY 100,000 (or equivalent in foreign currency) is exempt
+    from the obligation under Section 4.3, but must still
+    comply with all other terms of this license.
+
+    年营业收入低于人民币 10 万元（或等值外币）的微型商业
+    使用者，免除第 4.3 条的慈善回馈义务，但仍须遵守本许可
+    证的其他全部条款。
+
+4.6 BURDEN OF PROOF / 举证责任
+    Upon reasonable request by the author or copyright holder,
+    a Commercial User shall provide reasonable evidence of
+    its fulfillment of the donation (such as donation receipts
+    or receipts from a public-interest institution). This
+    license does not require a Commercial User to disclose its
+    complete financial accounts.
+
+    在被作者或版权持有人合理要求时，商业使用者应提供捐赠
+    履行的合理证明（如捐赠凭证、公益机构收据等）。本许可证
+    不要求商业使用者公开其完整财务账目。
+
+4.7 CONSEQUENCE OF BREACH / 违反后果
+    Failure to fulfill the charity contribution obligation
+    under this Section 4 constitutes a breach of this license.
+    In such event, all rights granted to that Commercial User
+    under this license terminate automatically, and such user
+    may not continue to use, copy, distribute, or modify the
+    Software without separate written permission from the author.
+
+    未履行第 4 条的慈善回馈义务，即构成对本许可证的违约。
+    此时，该商业使用者依据本许可证获得的全部授权自动终止，
+    未获作者另行书面许可前，不得继续使用、复制、分发或修改
+    本软件。
+
+================================================================
+5. NON-COMMERCIAL USE / 非商用使用
+================================================================
+Those who use the Software solely for personal study,
+research, education, evaluation, or other non-commercial
+purposes are not subject to Section 4 and hold rights
+identical to those under the MIT License.
+
+仅为个人学习、研究、教育、评价或其他非商业目的而使用本
+软件者，不受第 4 条约束，其权利与 MIT 许可证下完全一致。
+
+================================================================
+6. PROPAGATION OF THE LICENSE / 许可证的传递
+================================================================
+Anyone who distributes the Software (including modified
+versions and derivative works) must pass along the full text
+of this license. A derivative work may adopt this license or
+another license whose terms do not conflict with this license;
+however, if its user engages in a Commercial Purpose, the
+charity contribution obligation under Section 4 shall still
+apply.
+
+任何分发本软件（含修改版、衍生作品）的人，必须一并传递本
+许可证全文。衍生作品可自行选择采用本许可证，或采用与本
+许可证条款不冲突的其他许可证；但若其使用者欲从事商业用途，
+第 4 条慈善回馈义务依然适用。
+
+================================================================
+7. INTERPRETATION AND DISPUTES / 解释与争议
+================================================================
+This license shall be interpreted in a manner consistent with
+the freedoms granted in Section 1. If any provision is held
+unenforceable in any jurisdiction, such provision shall be
+adjusted to the minimum extent necessary, and all remaining
+provisions shall remain in full force and effect.
+
+本许可证的解释应以第 1 条授予的自由为原则。各司法管辖区若
+认定某条款不可执行，该条款应在最小必要范围内被调整，其余
+条款继续完全有效。

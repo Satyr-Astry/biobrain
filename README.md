@@ -188,4 +188,24 @@ v1.0 静默态/双轨/状态机     → v2.0 神经元四级组织+思考流
 
 ---
 
+## 许可证 / License
+
+本项目采用 **慈善条款源可用许可证 1.0 版 (CCSAL-1.0)**
+This project is licensed under the **Charity-Clause Source Available License v1.0 (CCSAL-1.0)**
+
+> **MIT 的全部自由 + 一条：商用者须捐出 ≥1% 相关净收益做慈善。**
+> **All the freedom of MIT + one rule: commercial users must donate ≥1% of attributable net proceeds to charity.**
+
+| | 中文 | English |
+|---|---|---|
+| ✅ **非商用** | 随便用，和 MIT 完全一样 | Free to use, exactly like MIT |
+| 💰 **商用** | 须捐 **≥1%** 净收益给公益 | Must donate **≥1%** net proceeds to charity |
+| 🐣 **小微豁免** | 年营收 <10 万元免捐 | Under CNY 100k revenue: exempt |
+
+完整条款见 [LICENSE](LICENSE)。历史版本（v7.4 及之前）依 MIT 许可证发布，
+其授权不受本变更影响；`LICENSE-MIT.txt` 保留原 MIT 文本。
+Full terms in [LICENSE](LICENSE). Earlier releases (up to v7.4) were
+published under the MIT License and remain so; the original MIT text is
+preserved in `LICENSE-MIT.txt`.
+
 *仿生AI项目设计 · 2026-09 · 作者：Satyr_Astry*
