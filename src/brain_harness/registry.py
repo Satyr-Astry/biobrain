@@ -90,3 +90,4 @@ def load_builtins() -> None:
     from . import processors as _p   # noqa: F401
     from . import policies as _q     # noqa: F401
     from . import sinks as _k        # noqa: F401
+    from . import webui as _w        # noqa: F401  ★WebUISink

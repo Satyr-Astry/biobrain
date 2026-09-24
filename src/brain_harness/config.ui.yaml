@@ -1,0 +1,37 @@
+# HarnessPlatform · Web UI 配置
+# 用法: cd code && python -m brain_harness.cli run -c brain_harness/config.ui.yaml
+# 然后浏览器打开 http://127.0.0.1:8765
+
+brain:
+  seed: 1
+  state_path: "run/ui/brain.json"
+
+pipeline:
+  sources:
+    - type: clock
+      every: 2
+    - type: file
+      path: "run/ui/inbox.txt"
+
+  processors:
+    - type: think
+      task_type: general
+
+  policies:
+    - type: metrics
+      every: 5
+    - type: sleep
+      every: 30
+      min_buffer: 2
+
+  sinks:
+    # ★ Web UI（同时承担输出端 + 观测面板）
+    - type: webui
+      port: 8765
+      keep: 500
+    - type: jsonl
+      path: "run/ui/outbox.jsonl"
+
+recorder:
+  path: "run/ui/recorder.jsonl"
+  snapshot_every: 100

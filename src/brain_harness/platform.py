@@ -114,6 +114,7 @@ class HarnessPlatform:
         self.cfg = _merge(DEFAULT_CONFIG, config or {})
         self.brain: Optional[BrainHandle] = None
         self.pipeline: Optional[Pipeline] = None
+        self._inject_src = None
 
     # ---- 构造大脑 ----
     def _build_brain(self) -> BrainHandle:
@@ -139,13 +140,34 @@ class HarnessPlatform:
                        snapshot_every=int(rcfg.get("snapshot_every", 0) or 0),
                        echo=bool(rcfg.get("echo", False)))
 
-        # 若某个 Sink 需要大脑状态（HTTPSink），绑定
+        # 若某个 Sink 需要大脑状态（HTTPSink/WebUISink），绑定
+        metrics_pol = next((q for q in policies if getattr(q, "name", "") == "metrics"), None)
         for sk in sinks:
             if hasattr(sk, "bind_state"):
                 sk.bind_state(self.brain.state)
+            if hasattr(sk, "bind_extra"):
+                sk.bind_extra(
+                    stats_fn=lambda: self.pipeline.stats if self.pipeline else {},
+                    metrics_fn=(lambda: metrics_pol.history) if metrics_pol else None,
+                    inject_fn=self.inject,
+                )
 
         self.pipeline = Pipeline(self.brain, sources, procs, policies, sinks, rec)
         return self.pipeline
+
+    # ---- 外部注入（Web UI / API 用） ----
+    def inject(self, text: str) -> None:
+        """把一条文本注入平台（下一 tick 被 Source 取走）
+
+        走平台自己的 StaticSource 队列 —— 不绕过 tick 边界（NORM-4）。
+        """
+        from .sources import StaticSource
+        if self._inject_src is None:
+            self._inject_src = StaticSource(items=[])
+            self._inject_src.name = "inject"
+            if self.pipeline:
+                self.pipeline.sources.insert(0, self._inject_src)
+        self._inject_src.items.append(text)
 
     # ---- 运行 ----
     def run(self, steps: int = 0, paced: float = 0.0) -> Dict[str, Any]:
