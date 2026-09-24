@@ -116,3 +116,65 @@ pipeline:
 | **无热重载** | 改插件要重启进程 |
 | **`evolve` Policy** | 依赖 `auto_evolve.py` 暴露 `evolve_once`/`run_once`，若没有则跳过 |
 | **YAML 依赖** | 有 pyyaml 用真解析；没有则用内置极简解析（只支持平台配置形状） |
+
+---
+
+## 7. Web UI 观测面板（v1.1 新增）
+
+### 启动
+
+```bash
+cd code
+python -m brain_harness.cli run -c brain_harness/config.ui.yaml --paced 0.5
+```
+
+然后浏览器打开 **http://127.0.0.1:8765**
+
+### 界面内容
+
+| 区域 | 显示 |
+|---|---|
+| **顶栏** | 连接状态灯（绿=在线）· `neurons / tracts / active` · 刷新次数 |
+| **左列** | 大脑状态 KPI（版本/种子/神经元/束/群组/库/活跃/ticks/体验缓冲/经历数/成功率）· **输入注入框** |
+| **中列** | **收敛度趋势图**（Canvas 自绘，最近 60 条）· **思考流表格**（tick / 自发·外部标签 / 输入→输出 / 收敛度） |
+| **右列** | 流水线统计（ticks/刺激/结果/策略执行/错误 + 按来源/按策略）· 指标历史 |
+
+### HTTP 端点
+
+| 端点 | 说明 |
+|---|---|
+| `GET /` | 单页 UI |
+| `GET /api/snapshot` | **一次拿全**（state + results + stats + metrics）—— UI 主轮询 |
+| `GET /api/results` | 最近 40 条结果 |
+| `GET /api/state` | 大脑状态 |
+| `GET /api/metrics` | 指标历史（`metrics` policy 的 history） |
+| `GET /api/stats` | pipeline 统计 |
+| `POST /api/inject` | **注入一条输入**（JSON: `{"text": "..."}`） |
+| `GET /health` | 健康检查 |
+
+### 配置
+
+```yaml
+pipeline:
+  sinks:
+    - type: webui
+      port: 8765
+      keep: 500        # 内存中保留的结果条数
+```
+
+### ⚠️ 踩坑记录
+
+| 坑 | 说明 |
+|---|---|
+| **curl 传中文会乱码** | 终端编码破坏 UTF-8（显示 `Сڲƽ̨`）。**用 Python `urllib` + `ensure_ascii=False` 才准** |
+| **注入后要马上查** | `/api/results` 只留 40 条，`--paced 0.5` 时 20 秒就滑出窗口 |
+| **`webui` 注册依赖 `load_builtins`** | 新增 Sink 模块后必须在 `registry.load_builtins()` 里 import，否则 `list` 看不到 |
+
+### 验证过的行为
+
+```
+GET  /health        → {"ok": true, "sink": "webui", "port": 8765}
+GET  /api/snapshot  → neurons 64 / tracts 5 / active 60 / metrics 4条
+POST /api/inject    → {"ok": true, "injected": "小悠在测试平台UI"}
+                      下一 tick: tick115 [inject] 小悠在测试平台UI  conv=0.496
+```
