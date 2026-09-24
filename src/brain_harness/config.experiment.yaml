@@ -1,0 +1,47 @@
+# 真实实验：长时间持续思考 + 在线监控
+# 目的：利用平台的"统一观测"能力，回答三个问题
+#   Q1 平台能否稳定跑长时间（无泄漏/无崩溃/耗时是否漂移）
+#   Q2 历史区分度 dmin 在持续思考 + 睡眠巩固下如何演化（ALG-18/19 相关）
+#   Q3 睡眠巩固是否真的改变网络（结构/激活分布）
+
+brain:
+  seed: 1
+  state_path: "run/exp_platform/brain.json"
+
+pipeline:
+  sources:
+    # 自发思考（思考流不等输入 —— NORM-1）
+    - type: clock
+      every: 3
+    # 外部输入（可随时往这个文件写一行）
+    - type: file
+      path: "run/exp_platform/inbox.txt"
+
+  processors:
+    - type: think
+      task_type: general
+
+  policies:
+    # 每 10 tick 采指标（轻）
+    - type: metrics
+      every: 10
+    # 每 40 tick 测一次历史区分度（重：要建多个大脑实例）
+    - type: workmem_probe
+      every: 40
+    # 每 25 tick 睡眠巩固一次
+    - type: sleep
+      every: 25
+      min_buffer: 2
+
+  sinks:
+    - type: log
+      echo: true
+      path: "run/exp_platform/harness.log"
+    - type: jsonl
+      path: "run/exp_platform/outbox.jsonl"
+    - type: memory
+      path: "run/exp_platform/memory.jsonl"
+
+recorder:
+  path: "run/exp_platform/recorder.jsonl"
+  snapshot_every: 50

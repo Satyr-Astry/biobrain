@@ -42,8 +42,8 @@ class Pipeline:
 
     # ---------------- 单 tick ----------------
     def tick(self, ctx: TickContext) -> Optional[Result]:
+        ctx.begin_tick()                    # ★重置本轮计时（修 ms 语义 bug）
         ctx.tick += 1
-        self.rec.tick(ctx, len(self.sources), len(self.policies))
 
         # 1. 收集刺激（多 Source，按 weight 取最高）
         stim: Optional[Stimulus] = None
@@ -106,6 +106,9 @@ class Pipeline:
         # 5. 快照
         self.rec.maybe_snapshot(ctx, self.handle.state)
 
+        # 6. ★本 tick 结束 → 落 tick 事件（此时 ms 才是真实单 tick 耗时）
+        self.rec.tick(ctx, len(self.sources), len(self.policies))
+
         self.stats["ticks"] += 1
         return result
 
@@ -122,7 +125,7 @@ class Pipeline:
                 break
             if paced:
                 time.sleep(paced)
-        ctx.meta["elapsed"] = time.time() - t0
+        ctx.meta["elapsed"] = ctx.total_elapsed()
         return ctx
 
     def stop(self) -> None:

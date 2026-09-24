@@ -17,12 +17,22 @@ import time
 class TickContext:
     """一个 tick 的上下文（在所有组件间传递）"""
     tick: int = 0
-    started_at: float = field(default_factory=time.time)
+    started_at: float = field(default_factory=time.time)   # 本轮 tick 起始时刻
+    t0: float = field(default_factory=time.time)           # 整个 run 起始时刻
     running: bool = True
     meta: Dict[str, Any] = field(default_factory=dict)
 
     def elapsed(self) -> float:
+        """★本轮 tick 已耗时（秒）—— 必须在每 tick 开始时重置 started_at"""
         return time.time() - self.started_at
+
+    def total_elapsed(self) -> float:
+        """整个 run 的累计耗时"""
+        return time.time() - self.t0
+
+    def begin_tick(self) -> None:
+        """★每 tick 开头调用，重置计时"""
+        self.started_at = time.time()
 
 
 @dataclass
