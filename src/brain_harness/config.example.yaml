@@ -1,0 +1,40 @@
+# HarnessPlatform 示例配置
+# 用法: cd code && python -m platform.cli run -c platform/config.example.yaml -n 30
+
+brain:
+  seed: 1
+  state_path: "run/brain.json"
+
+pipeline:
+  # 输入源（按 weight 竞争，高者优先）
+  sources:
+    - type: file
+      path: "run/inbox.txt"
+    - type: clock
+      every: 5
+
+  # 处理器
+  processors:
+    - type: think
+      task_type: general
+
+  # 旁路策略（自判频率）
+  policies:
+    - type: metrics
+      every: 10
+    - type: sleep
+      every: 8
+      min_buffer: 2
+
+  # 输出端
+  sinks:
+    - type: log
+      echo: true
+      path: "run/harness.log"
+    - type: jsonl
+      path: "run/outbox.jsonl"
+
+recorder:
+  path: "run/recorder.jsonl"
+  snapshot_every: 20
+  echo: false
