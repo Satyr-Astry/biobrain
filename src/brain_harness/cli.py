@@ -25,7 +25,7 @@ def _sig(sig, frame):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(prog="brain_harness", description="BioBrain Harness Platform")
+    ap = argparse.ArgumentParser(prog="brain_harness", description="CogVec Harness Platform")
     sub = ap.add_subparsers(dest="cmd")
 
     sub.add_parser("list", help="列出所有可用插件")

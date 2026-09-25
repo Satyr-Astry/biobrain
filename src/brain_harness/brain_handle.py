@@ -1,10 +1,10 @@
 """
 HarnessPlatform · 大脑句柄（单实例 + 线程安全）
 ================================================
-★ 核心不变量：**整个平台进程里只有一个 BioBrain 实例**。
+★ 核心不变量：**整个平台进程里只有一个 CogVec 实例**。
    治 P-ARCH-1「两套引擎/多实例状态分裂」。
 
-所有访问都过 `self._lock`（单大锁）—— BioBrain 不是线程安全的，
+所有访问都过 `self._lock`（单大锁）—— CogVec 不是线程安全的，
 而平台的 tick 频率远低于锁竞争代价，串行化是最简单且正确的选择。
 """
 from __future__ import annotations
@@ -13,7 +13,7 @@ from typing import Any, Callable, Optional
 
 
 class BrainHandle:
-    """BioBrain 的单例包装 + 串行化访问"""
+    """CogVec 的单例包装 + 串行化访问"""
 
     def __init__(self, brain: Any):
         self._brain = brain
@@ -74,14 +74,14 @@ class BrainHandle:
     @classmethod
     def create(cls, seed: int = 1, state_path: Optional[str] = None,
                **kwargs) -> "BrainHandle":
-        """在 code/ 目录上下文里构造 BioBrain"""
+        """在 code/ 目录上下文里构造 CogVec"""
         import sys, os
         code_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         if code_dir not in sys.path:
             sys.path.insert(0, code_dir)
-        from server import BioBrain
+        from server import CogVec
         kw = {"seed": seed}
         if state_path:
             kw["state_path"] = state_path
         kw.update(kwargs)
-        return cls(BioBrain(**kw))
+        return cls(CogVec(**kw))

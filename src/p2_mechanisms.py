@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Set, Tuple
 import numpy as np
 import json, hashlib, time
 
-from bio_brain import (NervousSystem, Neuron, Tract, Group, Library,
+from cog_vec import (NervousSystem, Neuron, Tract, Group, Library,
                        norm, top_k_mean, clamp, ACTIVE_EPS,
                        D_DENDRITE, D_SOMA, D_AXON, NORM_CLIP)
 

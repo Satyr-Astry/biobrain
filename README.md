@@ -1,4 +1,4 @@
-# 🧠 BioBrain — 仿生认知架构 / Bionic Cognitive Architecture
+# 🧠 CogVec — 仿生认知架构 / Bionic Cognitive Architecture
 
 [English](#english) | [中文](#中文)
 
@@ -16,7 +16,7 @@
 | **Memory** | BM25 + semantic hybrid retrieval with confidence gating |
 | **Language** | LLM language area (frozen weights, commanded by the cognitive layer) |
 | **API** | OpenAI-compatible (`POST /v1/chat/completions`, works with any client / Hermes Agent) |
-| **Docs** | [Paper (EN/中文)](paper/biobrain_paper.md) · [Architecture Book v3.4 (中文)](docs/01_架构/总架构书.md) |
+| **Docs** | [Paper (EN/中文)](paper/cogvec_paper.md) · [Architecture Book v3.4 (中文)](docs/01_架构/总架构书.md) |
 
 ### Current Health (v3.4, verified)
 
@@ -131,7 +131,7 @@ repo/
 | **记忆** | BM25+语义混合检索 + 置信度门控 |
 | **语言** | LLM 语言区（权重冻结，受认知层指挥） |
 | **接口** | OpenAI 兼容（任意客户端 / Hermes Agent 可直接调用） |
-| **文档** | [论文（中英）](paper/biobrain_paper.md) · [总架构书 v3.4](docs/01_架构/总架构书.md)（唯一架构权威） |
+| **文档** | [论文（中英）](paper/cogvec_paper.md) · [总架构书 v3.4](docs/01_架构/总架构书.md)（唯一架构权威） |
 
 ### 当前健康指标（v3.4，已实测）
 

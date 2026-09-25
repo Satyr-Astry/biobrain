@@ -1,7 +1,7 @@
-# SNN（脉冲神经网络）专项评估：现状 · 优劣 · 与 BioBrain 的关系
+# SNN（脉冲神经网络）专项评估：现状 · 优劣 · 与 CogVec 的关系
 
 > **落笔**：2026-09-19
-> **定位**：SNN 是独立于 ANN/BioBrain 的**第三极**（"第三代神经网络"）
+> **定位**：SNN 是独立于 ANN/CogVec 的**第三极**（"第三代神经网络"）
 > **铁律**：所有结论**均有 arXiv/URL 出处**（web_search 实证）
 > **★最震撼的发现**：**QKFormer 已在 ImageNet 上超过 DeiT-B/Swin-T**（同参数量），能耗仅 1/2
 
@@ -229,7 +229,7 @@ SAFformer:  26.58M 参数 → 80.44%，能耗 5.88 mJ
 
 # 第六部分 · ★ 三方对比（完整版）
 
-| 维度 | **BioBrain**（连续值向量神经元） | **SNN**（脉冲） | **Transformer** |
+| 维度 | **CogVec**（连续值向量神经元） | **SNN**（脉冲） | **Transformer** |
 |---|---|---|---|
 | **基本单元** | 连续值向量 | **0/1 脉冲** | 实数激活 |
 | **时序** | 12 tick 单轮 | ✅ **膜电位动力学** | ⚠️ 位置编码 |
@@ -253,15 +253,15 @@ SAFformer:  26.58M 参数 → 80.44%，能耗 5.88 mJ
 | **大规模语言** | ✅ **Transformer** | 1T+ vs 1B |
 | **长程依赖** | ✅ **Transformer** | SNN "not transformers (yet)" |
 | **神经科学验证** | ✅ **SNN** | 生物合理性 |
-| **持续学习** | ⚠️ **都不成熟** | BioBrain 有意愿但无机制 |
+| **持续学习** | ⚠️ **都不成熟** | CogVec 有意愿但无机制 |
 
 ---
 
-# 第七部分 · ★★ 对 BioBrain 的启示（最重要的部分）
+# 第七部分 · ★★ 对 CogVec 的启示（最重要的部分）
 
-## 7.1 残酷的真相：**BioBrain 现在是"三方中最弱的"**
+## 7.1 残酷的真相：**CogVec 现在是"三方中最弱的"**
 
-| 维度 | BioBrain | 差距 |
+| 维度 | CogVec | 差距 |
 |---|---|---|
 | 稀疏性 | 90%+ 活跃 | **比 SNN 差 20-90×** |
 | 训练 | 纯 Hebbian | **SNN 至少有代理梯度** |
@@ -269,13 +269,13 @@ SAFformer:  26.58M 参数 → 80.44%，能耗 5.88 mJ
 | 硬件 | CPU | **SNN 有 Loihi 2 / Hala Point** |
 | 结果 | ❌ **无任何基准分数** | **SNN 有 ImageNet 85.65%** |
 
-**⇒ BioBrain 目前**：
+**⇒ CogVec 目前**：
 - **没脉冲**（不是 SNN）
 - **没梯度**（不是 ANN）
 - **没规模**（不是大模型）
 - **没基准**（无法证明任何优势）
 
-## 7.2 ★ 但 SNN 的困境**正好说明了 BioBrain 的可能机会**
+## 7.2 ★ 但 SNN 的困境**正好说明了 CogVec 的可能机会**
 
 **SNN 的两个核心矛盾**（都是 SNN 自己解决不了的）：
 
@@ -289,34 +289,34 @@ SAFformer:  26.58M 参数 → 80.44%，能耗 5.88 mJ
 
 **★SNN 要时序 → 必须存全图 → 内存爆炸**
 
-**⇒ 这两条正好是 BioBrain "无梯度 + 局部可塑" 路线的**理论空间**：
+**⇒ 这两条正好是 CogVec "无梯度 + 局部可塑" 路线的**理论空间**：
 ```
 SNN 的困境：要梯度就得稠密，要时序就得存全图
-BioBrain 的可能：不用梯度（三因子局部规则）→ 不受"稀疏-可训练"矛盾约束
+CogVec 的可能：不用梯度（三因子局部规则）→ 不受"稀疏-可训练"矛盾约束
                  因果优先（NORM-4）→ 不需存全图
 ```
 
-**★但前提**：**BioBrain 必须真的实现"局部规则"**（现在的纯 Hebbian **不算** —— 无误差信号 = 无学习目标）
+**★但前提**：**CogVec 必须真的实现"局部规则"**（现在的纯 Hebbian **不算** —— 无误差信号 = 无学习目标）
 
 ## 7.3 ★★★ 权威建议：**别做 SNN-Transformer**
 
 **Edge 综述（arXiv:Middleton2026b）的判断**：
 > *"**Transformers were conceived as scaling architectures**, and their memory and compute footprint, **even in spiking form, sits awkwardly with strict size, weight, and power budgets**. **Convolutional and recurrent SNN architectures, though less fashionable, may ultimately prove better matched** to the environments this field is most motivated to serve."*
 
-**⇒ 对 BioBrain**：
+**⇒ 对 CogVec**：
 > **不要追"大而全"**（做不了，SNN 自己都做不了）
-> **BioBrain 的优势方向是"小、稀疏、事件驱动、持续学习"**
+> **CogVec 的优势方向是"小、稀疏、事件驱动、持续学习"**
 
 ## 7.4 ★ 具体可借鉴（按优先级）
 
-| 优先级 | 借鉴 | 依据 | 对 BioBrain |
+| 优先级 | 借鉴 | 依据 | 对 CogVec |
 |---|---|---|---|
-| **P0** | **膜电位动力学**（LIF） | SNN 时序能力的来源 | BioBrain 现在**无膜电位**（只有 activity） |
-| **P0** | **事件驱动计算**（只有活跃突触算） | Springer：能耗优势来自此 | BioBrain 90% 活跃 → 无事件驱动 |
-| **P1** | **WTA 替代 softmax** | WD-Spikingformer：能效 8× | BioBrain 用注意力（softmax） |
-| **P1** | **双时间尺度**（快激活 + 慢结构） | RSGN：15× 参数少 | BioBrain 有结构可塑，但未验证 |
-| **P2** | **ANN→SNN 转换思路** | 免从头训练 | 可用于"给 BioBrain 灌能力" |
-| **P3** | **梯度检查点**（治 O(LT) 内存） | ICLR 2026 | 如果 BioBrain 将来要 BPTT |
+| **P0** | **膜电位动力学**（LIF） | SNN 时序能力的来源 | CogVec 现在**无膜电位**（只有 activity） |
+| **P0** | **事件驱动计算**（只有活跃突触算） | Springer：能耗优势来自此 | CogVec 90% 活跃 → 无事件驱动 |
+| **P1** | **WTA 替代 softmax** | WD-Spikingformer：能效 8× | CogVec 用注意力（softmax） |
+| **P1** | **双时间尺度**（快激活 + 慢结构） | RSGN：15× 参数少 | CogVec 有结构可塑，但未验证 |
+| **P2** | **ANN→SNN 转换思路** | 免从头训练 | 可用于"给 CogVec 灌能力" |
+| **P3** | **梯度检查点**（治 O(LT) 内存） | ICLR 2026 | 如果 CogVec 将来要 BPTT |
 
 ## 7.5 ★★★ 最该做的一件事：**跟 SNN 做同一个基准**
 
@@ -325,7 +325,7 @@ BioBrain 的可能：不用梯度（三因子局部规则）→ 不受"稀疏-�
 - **指标**：Top-1 精度 / 参数 / 时间步 / 能耗（mJ）
 - **对照**：同参数量的 ANN
 
-**⇒ BioBrain 应该**：
+**⇒ CogVec 应该**：
 ```
 在同一任务（如 CIFAR-10，或 DVS128 Gesture）上：
   ① 报告 Top-1 精度
@@ -334,7 +334,7 @@ BioBrain 的可能：不用梯度（三因子局部规则）→ 不受"稀疏-�
   ④ 估算能耗
   ⑤ 与 QKFormer/SAFformer 对照
 
-★ 因为 SNN 社区的基准是【公认的】，不像 BioBrain 自造的 dmin/dmean
+★ 因为 SNN 社区的基准是【公认的】，不像 CogVec 自造的 dmin/dmean
 ```
 
 ---
@@ -349,7 +349,7 @@ BioBrain 的可能：不用梯度（三因子局部规则）→ 不受"稀疏-�
 | "SNN 已超过 Transformer" | ⚠️ **仅在 ImageNet 分类（等参数）**，不是全面超越 |
 | 稀疏上限公式 | ⚠️ **一篇论文（arXiv:2607.26648）**，需独立复现 |
 | Loihi 2 / Hala Point 状态 | ✅ **已发布**（Intel 官方 + Open Neuromorphic） |
-| **BioBrain 的任何基准** | ❌ **完全没有**（这是最大空缺） |
+| **CogVec 的任何基准** | ❌ **完全没有**（这是最大空缺） |
 
 ---
 
@@ -371,8 +371,8 @@ BioBrain 的可能：不用梯度（三因子局部规则）→ 不受"稀疏-�
 > - 事件驱动感知 → **可稀疏到 5%** ✅ **SNN 的战场**
 > - 循环语言推理 → **不能低于 50%** ❌
 >
-> **★对 BioBrain 的判断**：
+> **★对 CogVec 的判断**：
 > - **现状是三方中最弱的**（无脉冲/无梯度/无规模/无基准）
-> - **但 SNN 的两个困境（稀疏-可训练矛盾、BPTT 内存墙）正是 BioBrain "无梯度+因果优先"路线的理论空间**
+> - **但 SNN 的两个困境（稀疏-可训练矛盾、BPTT 内存墙）正是 CogVec "无梯度+因果优先"路线的理论空间**
 > - **前提**：必须真的实现"局部学习规则"（纯 Hebbian 不算）
 > - **最该做**：**跟 SNN 用同一个基准**（而非自造 dmin/dmean）

@@ -4,7 +4,7 @@
 把《工程规范_v7.2.md》中 9 个"代码暴露的漏洞"变成回归测试。
 每个测试对应一个曾经的真实缺陷 —— 若重现则失败。
 
-运行:  python -m pytest test_bio_brain.py -v
+运行:  python -m pytest test_cog_vec.py -v
       （在 code/ 目录下执行）
 
 对应关系：
@@ -23,8 +23,8 @@ import numpy as np
 import pytest
 import time
 
-import bio_brain as bb
-from bio_brain import (NervousSystem, SensoryPort, MotorPort,
+import cog_vec as bb
+from cog_vec import (NervousSystem, SensoryPort, MotorPort,
                        ACTIVE_EPS, NORM_CLIP)
 from self_training import (Experience, ExperienceBuffer, Consolidator,
                            ConvergenceMeter, FeedbackLoop, emit_decision,
@@ -657,7 +657,7 @@ def test_c15_bind_is_readonly():
 def test_c16_multihead_not_degenerate():
     """C16: N_HEADS 个头必须产生不同的注意力分布（否则多头无意义）。"""
     import numpy as np
-    import bio_brain as bb
+    import cog_vec as bb
     b = CogVec(seed=1)
     ign = b.sensory_symbol.ignite(b._encode_text("注意力机制"), b.ns)
     b.active |= set(ign["ignited"])

@@ -119,15 +119,15 @@ class WorkMemProbePolicy:
 
     def run(self, brain: Any, ctx: TickContext) -> Dict[str, Any]:
         import numpy as np
-        # ★修：brain 可能是 BrainHandle（不接受 seed），必须用 BioBrain 类
+        # ★修：brain 可能是 BrainHandle（不接受 seed），必须用 CogVec 类
         import sys, os
         code_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         if code_dir not in sys.path:
             sys.path.insert(0, code_dir)
-        from server import BioBrain
+        from server import CogVec
 
         def probe(hist):
-            b = BioBrain(seed=1)
+            b = CogVec(seed=1)
             for h in hist:
                 b.think(h)
             b.think("猫是哺乳动物")

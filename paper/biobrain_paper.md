@@ -1,5 +1,5 @@
-# BioBrain：一种持续思考、在思考中学习的仿生认知架构
-# BioBrain: A Bionic Cognitive Architecture That Thinks Continuously and Learns While Thinking
+# CogVec：一种持续思考、在思考中学习的仿生认知架构
+# CogVec: A Bionic Cognitive Architecture That Thinks Continuously and Learns While Thinking
 
 > 中文 / English bilingual paper · 仿生AI项目设计 · 2026-09
 
@@ -7,13 +7,13 @@
 
 ## 摘要
 
-当代大语言模型（LLM）遵循"先训练后使用"范式：训练结束后权重冻结，推理过程不产生任何学习。这与生物大脑"持续思考、激活即学习、睡眠巩固"的运行方式存在根本差异。本文提出 **BioBrain**——一种仿生认知架构，以张量化神经组织为核心，实现永不停止的"思考流"（thinking stream），使学习成为思考的副产品而非独立阶段。架构包含三层：**感觉端**（文本→稀疏神经激活）、**神经认知层**（16384 个张量化神经元组织成 1024 个重叠神经束，执行消息传递、侧向抑制、赢者通吃与在线可塑性）、**运动端**（由认知层指挥的 LLM 语言区，权重保持冻结，仅负责将大脑意图转化为流利语言）。记忆以 BM25+语义混合检索支持经验召回，置信度门控防止幻觉，双相睡眠（NREM 巩固 + REM 联想）在低活动期合并可塑量。系统对外暴露 OpenAI 兼容 API，可被任意 LLM 客户端或编排框架（如 Hermes Agent）直接调用。实验表明，系统在 27 条蒸馏记忆上达到 0.67–0.95 的置信度区分、约 3.8 秒的端到端响应，并正确拒答未知领域问题。本文还梳理了工程实现中暴露的 13 项规范缺陷（C1–C13）及其修复，展示了"规范—实现—回归测试"闭环的开发方法论。
+当代大语言模型（LLM）遵循"先训练后使用"范式：训练结束后权重冻结，推理过程不产生任何学习。这与生物大脑"持续思考、激活即学习、睡眠巩固"的运行方式存在根本差异。本文提出 **CogVec**——一种仿生认知架构，以张量化神经组织为核心，实现永不停止的"思考流"（thinking stream），使学习成为思考的副产品而非独立阶段。架构包含三层：**感觉端**（文本→稀疏神经激活）、**神经认知层**（16384 个张量化神经元组织成 1024 个重叠神经束，执行消息传递、侧向抑制、赢者通吃与在线可塑性）、**运动端**（由认知层指挥的 LLM 语言区，权重保持冻结，仅负责将大脑意图转化为流利语言）。记忆以 BM25+语义混合检索支持经验召回，置信度门控防止幻觉，双相睡眠（NREM 巩固 + REM 联想）在低活动期合并可塑量。系统对外暴露 OpenAI 兼容 API，可被任意 LLM 客户端或编排框架（如 Hermes Agent）直接调用。实验表明，系统在 27 条蒸馏记忆上达到 0.67–0.95 的置信度区分、约 3.8 秒的端到端响应，并正确拒答未知领域问题。本文还梳理了工程实现中暴露的 13 项规范缺陷（C1–C13）及其修复，展示了"规范—实现—回归测试"闭环的开发方法论。
 
 **关键词**：仿生认知架构；持续学习；神经组织；双相睡眠；符号接地；LLM 编排
 
 ## Abstract
 
-Contemporary large language models follow a "train-then-use" paradigm: weights are frozen after training, and inference produces no learning. This fundamentally differs from biological brains, which think continuously, learn whenever activated, and consolidate during sleep. We propose **BioBrain**, a bionic cognitive architecture built on a tensorized neural tissue that runs a never-ending "thinking stream," making learning a byproduct of thinking rather than a separate phase. The architecture has three layers: a **sensory end** (text → sparse neural activation), a **neural cognitive layer** (16,384 tensorized neurons organized into 1,024 overlapping tracts with message passing, lateral inhibition, winner-take-all dynamics, and online plasticity), and a **motor end** (an LLM language area commanded by the cognitive layer; its weights stay frozen and it only translates brain intent into fluent language). Memory uses BM25+semantic hybrid retrieval for experience recall; a confidence gate prevents hallucination; biphasic sleep (NREM consolidation + REM association) merges plasticity during low-activity phases. The system exposes an OpenAI-compatible API and can be invoked by any LLM client or orchestration framework (e.g., Hermes Agent). Experiments show confidence discrimination of 0.67–0.95 across 27 distilled memories, end-to-end latency of ≈3.8 s, and correct refusal on out-of-domain questions. We also document 13 specification defects (C1–C13) exposed by implementation and their fixes, demonstrating a closed-loop "specification–implementation–regression-test" development methodology.
+Contemporary large language models follow a "train-then-use" paradigm: weights are frozen after training, and inference produces no learning. This fundamentally differs from biological brains, which think continuously, learn whenever activated, and consolidate during sleep. We propose **CogVec**, a bionic cognitive architecture built on a tensorized neural tissue that runs a never-ending "thinking stream," making learning a byproduct of thinking rather than a separate phase. The architecture has three layers: a **sensory end** (text → sparse neural activation), a **neural cognitive layer** (16,384 tensorized neurons organized into 1,024 overlapping tracts with message passing, lateral inhibition, winner-take-all dynamics, and online plasticity), and a **motor end** (an LLM language area commanded by the cognitive layer; its weights stay frozen and it only translates brain intent into fluent language). Memory uses BM25+semantic hybrid retrieval for experience recall; a confidence gate prevents hallucination; biphasic sleep (NREM consolidation + REM association) merges plasticity during low-activity phases. The system exposes an OpenAI-compatible API and can be invoked by any LLM client or orchestration framework (e.g., Hermes Agent). Experiments show confidence discrimination of 0.67–0.95 across 27 distilled memories, end-to-end latency of ≈3.8 s, and correct refusal on out-of-domain questions. We also document 13 specification defects (C1–C13) exposed by implementation and their fixes, demonstrating a closed-loop "specification–implementation–regression-test" development methodology.
 
 **Keywords**: bionic cognitive architecture; continual learning; neural tissue; biphasic sleep; symbol grounding; LLM orchestration
 
@@ -212,10 +212,10 @@ Pure standard library (http.server), zero new dependencies. Any OpenAI client ca
 
 ## 7. 结论 / Conclusion
 
-BioBrain 演示了一条与"先训练后使用"范式不同的路径：**学习是思考的副产品**。张量化神经组织以矩阵运算承载持续思考流，置信度门控提供防幻觉元认知，双相睡眠实现在线巩固，LLM 语言区保留通用语言能力。系统以 OpenAI 兼容 API 融入现有 LLM 生态，可被编排框架直接调用。项目同时沉淀了一套"规范—实现—回归测试"的闭环工程方法论（v1.0→v7.4 八次大版本迭代、13 项缺陷回填），为后续亿级神经元扩展提供工程基础。
+CogVec 演示了一条与"先训练后使用"范式不同的路径：**学习是思考的副产品**。张量化神经组织以矩阵运算承载持续思考流，置信度门控提供防幻觉元认知，双相睡眠实现在线巩固，LLM 语言区保留通用语言能力。系统以 OpenAI 兼容 API 融入现有 LLM 生态，可被编排框架直接调用。项目同时沉淀了一套"规范—实现—回归测试"的闭环工程方法论（v1.0→v7.4 八次大版本迭代、13 项缺陷回填），为后续亿级神经元扩展提供工程基础。
 
-BioBrain demonstrates a path distinct from the train-then-use paradigm: **learning as a byproduct of thinking**. Tensorized neural tissue sustains a continuous thinking stream through matrix operations; the confidence gate provides anti-hallucination metacognition; biphasic sleep realizes online consolidation; the LLM language area preserves general language ability. The system integrates into the existing LLM ecosystem through an OpenAI-compatible API and can be invoked by orchestration frameworks directly. The project also establishes a closed-loop "specification–implementation–regression-test" methodology (eight major version iterations from v1.0 to v7.4, thirteen defect back-fills), laying an engineering foundation for future billion-neuron scaling.
+CogVec demonstrates a path distinct from the train-then-use paradigm: **learning as a byproduct of thinking**. Tensorized neural tissue sustains a continuous thinking stream through matrix operations; the confidence gate provides anti-hallucination metacognition; biphasic sleep realizes online consolidation; the LLM language area preserves general language ability. The system integrates into the existing LLM ecosystem through an OpenAI-compatible API and can be invoked by orchestration frameworks directly. The project also establishes a closed-loop "specification–implementation–regression-test" methodology (eight major version iterations from v1.0 to v7.4, thirteen defect back-fills), laying an engineering foundation for future billion-neuron scaling.
 
 ---
 
-*仿生AI项目设计 · BioBrain Project · 2026-09 · Author: Satyr_Astry*
+*仿生AI项目设计 · CogVec Project · 2026-09 · Author: Satyr_Astry*

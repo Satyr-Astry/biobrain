@@ -258,12 +258,12 @@
 
 ## 6.1 主人项目的"位置"（诚实判断）
 
-**BioBrain 项目定位**（架构书 §1.0）：
+**CogVec 项目定位**（架构书 §1.0）：
 > **"生物启发的连续值向量神经元网络"**（不是 SNN）
 
 **对照本表**：
 
-| 维度 | BioBrain 现状 | 与谁像 |
+| 维度 | CogVec 现状 | 与谁像 |
 |---|---|---|
 | 稀疏性 | ❌ **90%+ 活跃**（真 SNN 是 1-5%） | ❌ **不像生物** |
 | 持续学习 | ✅ NORM-3 无分离 | ✅ **像生物** |
@@ -276,7 +276,7 @@
 
 ### 劣势 1：**稀疏度差 20-90 倍**
 ```
-BioBrain：90.62% 活跃（阈值 0.10）
+CogVec：90.62% 活跃（阈值 0.10）
 真 SNN：  1-5%
 ★ 而 arXiv:2607.26648 证明：稀疏性是能耗优势的唯一来源
 ```
@@ -284,13 +284,13 @@ BioBrain：90.62% 活跃（阈值 0.10）
 ### 劣势 2：**比 SNN 还缺训练机制**
 ```
 SNN：有代理梯度（surrogate gradient）+ e-prop 等局部规则
-BioBrain：❌ 纯 Hebbian（无误差信号）
+CogVec：❌ 纯 Hebbian（无误差信号）
 ★ 而 arXiv:2409.02111 说连 SNN 都在为"训练困难"挣扎
 ```
 
 ### 劣势 3：**规模小到无法验证任何 scale 结论**
 ```
-BioBrain：64 神经元
+CogVec：64 神经元
 SNN 天花板：300M 参数
 Transformer：1T+
 ```
@@ -300,7 +300,7 @@ Transformer：1T+
 **RSGN（arXiv:2601.18064）的批评精准击中 Transformer**：
 > *"they **maintain fixed structure across inputs**, failing to capture **input-dependent routing** observed in biological neural systems"*
 
-**⇒ BioBrain 的"拓扑可塑 + 束路由"正是**输入依赖路由**：**
+**⇒ CogVec 的"拓扑可塑 + 束路由"正是**输入依赖路由**：**
 - `update_structure`（Hebbian 结构可塑）
 - `_phase_bind`（按 key 相似度路由）
 - `Tract.key/value`（束级读写）
@@ -308,10 +308,10 @@ Transformer：1T+
 **★RSGN 用"双时间尺度"实现了这个**：
 ```
 快：可微激活传播
-慢：Hebbian 结构学习  ← ★ BioBrain 已有（update_structure）
+慢：Hebbian 结构学习  ← ★ CogVec 已有（update_structure）
 ```
 
-**⇒ BioBrain 的"慢尺度结构学习"是对的方向，只是没跑通**
+**⇒ CogVec 的"慢尺度结构学习"是对的方向，只是没跑通**
 
 ## 6.4 ★★ 具体建议（基于实证）
 
@@ -329,7 +329,7 @@ Transformer：1T+
 **借 arXiv:2607.26648 的方法论**（**换掉隐藏单元做对照**）：
 ```
 同一任务、同一架构，只换隐藏单元：
-  A 组：BioBrain 神经机制（连续值向量 + 扩散 + 路由）
+  A 组：CogVec 神经机制（连续值向量 + 扩散 + 路由）
   B 组：标准 Transformer block
   C 组：SNN（LIF）
   D 组：纯 MLP
@@ -342,7 +342,7 @@ Transformer：1T+
 ```
 
 **★为什么这最重要**：
-> **现在没有任何人能说清"BioBrain 的神经机制到底比 MLP 强在哪"**
+> **现在没有任何人能说清"CogVec 的神经机制到底比 MLP 强在哪"**
 > 因为**从没做过受控对照**
 > **arXiv:2607.26648 就是靠"只换隐藏单元"这一个实验，得出了整个领域的结论**
 
@@ -356,14 +356,14 @@ Transformer：1T+
 | "SNN 能耗 38-57× 优势" | ⚠️ **仅限神经形态硬件**（GPU 上可能更差） |
 | "SNN 规模上限 300M" | ⚠️ **是"转换法"的上限**，直接训练另有路线 |
 | "稀疏上限"公式 | ⚠️ **一篇论文的结论**（arXiv:2607.26648），需独立复现 |
-| BioBrain vs Transformer 的优劣 | ❌ **无任何受控对照实验**（这是最大空缺） |
-| BioBrain 的"输入依赖路由"优势 | ⚠️ **理论判断**（RSGN 印证方向，但 BioBrain 未验证） |
+| CogVec vs Transformer 的优劣 | ❌ **无任何受控对照实验**（这是最大空缺） |
+| CogVec 的"输入依赖路由"优势 | ⚠️ **理论判断**（RSGN 印证方向，但 CogVec 未验证） |
 
 ## 未做的事
 
 | 项 | 说明 |
 |---|---|
-| BioBrain vs 对照组的实验 | ❌ **未做**（这是 P0 建议） |
+| CogVec vs 对照组的实验 | ❌ **未做**（这是 P0 建议） |
 | 稀疏度改进的实现 | ❌ **未做** |
 | 误差信号机制 | ❌ **未做** |
 
@@ -390,11 +390,11 @@ Transformer：1T+
 > 2. **稀疏上限取决于任务**（前馈感知 5% / 循环语言 50%）
 > 3. **精度-效率按 1/ε² 对立**
 >
-> **★对 BioBrain 的诚实判断**：
+> **★对 CogVec 的诚实判断**：
 > - 稀疏度**差 20-90 倍**（90% vs 1-5%）
 > - **比 SNN 还缺训练机制**（纯 Hebbian，无误差信号）
 > - 规模**小 5 个数量级**
 > - **但"输入依赖路由"方向正确**（RSGN 印证）
 >
 > **★最该做的**：**做受控对照实验**（只换隐藏单元，学 arXiv:2607.26648）
-> —— 因为**现在没人能说清 BioBrain 比 MLP 强在哪**
+> —— 因为**现在没人能说清 CogVec 比 MLP 强在哪**

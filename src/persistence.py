@@ -326,7 +326,7 @@ def load_state(brain, state_path: str) -> Tuple[bool, str]:
     # ---- 分层 ----
     p = os.path.join(d, "libraries.json")
     if os.path.isfile(p):
-        from bio_brain import Tier
+        from cog_vec import Tier
         with open(p, encoding="utf-8") as f:
             libs = json.load(f)
         for ls, v in libs.items():
@@ -397,7 +397,7 @@ def load_state(brain, state_path: str) -> Tuple[bool, str]:
         note.append("attn=yes")
 
     # ---- 元数据 ----
-    from bio_brain import Tier  # noqa
+    from cog_vec import Tier  # noqa
     brain.tick_count = meta.get("tick_count", brain.tick_count)
     ns.t = float(meta.get("ns_t", getattr(ns, "t", 0.0)))
     ns.attn_mode = meta.get("attn_mode", getattr(ns, "attn_mode", "cos"))

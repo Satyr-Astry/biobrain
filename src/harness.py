@@ -38,7 +38,7 @@ from pathlib import Path
 from typing import Optional
 
 # 复用已有的仿生大脑实现
-from server import BioBrain
+from server import CogVec
 from advanced import EnergyScheduler
 
 # ------------------------------------------------------------------
@@ -76,7 +76,7 @@ def _emit(obj: dict):
 class Stimulus:
     """刺激来源：外部输入 + 自发（记忆/联想/提问）"""
 
-    def __init__(self, brain: BioBrain, rng=None):
+    def __init__(self, brain: CogVec, rng=None):
         import numpy as np
         self.brain = brain
         self.rng = rng or np.random.default_rng()
@@ -119,8 +119,8 @@ class Stimulus:
 # Harness 主循环
 # ------------------------------------------------------------------
 class BrainHarness:
-    def __init__(self, brain: Optional[BioBrain] = None):
-        self.brain = brain or BioBrain()
+    def __init__(self, brain: Optional[CogVec] = None):
+        self.brain = brain or CogVec()
         self.brain.load()
         self.stim = Stimulus(self.brain)
         self.energy = EnergyScheduler()

@@ -24,9 +24,10 @@ from typing import Dict, List, Optional
 from dataclasses import asdict
 import numpy as np
 
-from bio_brain import (NervousSystem, SensoryPort, MotorPort, Tier,
+from cog_vec import (NervousSystem, SensoryPort, MotorPort, Tier,
                        ACTIVE_EPS, D_SOMA, norm)
 from encoder import get_encoder
+from working_memory import WorkingMemory, WM_ROUND_TICKS
 from self_training import (Experience, ExperienceBuffer, Consolidator,
                            ConvergenceMeter, FeedbackLoop, emit_decision,
                            CONVERGE_HIGH, CONVERGE_LOW, PATIENCE)
@@ -37,7 +38,7 @@ from p2_mechanisms import Neurogenesis, CollectiveLayer, SelfModel
 # ============================================================
 # 核心：仿生大脑（把各模块组装成一个整体）
 # ============================================================
-class BioBrain:
+class CogVec:
     """一个可直接使用的仿生大脑实例"""
 
     STATE_VERSION = "v7.3"
@@ -45,7 +46,7 @@ class BioBrain:
     def __init__(self, seed: int = 42, n_sensory: int = 32, n_inter: int = 24,
                  n_motor: int = 6, state_path: Optional[str] = None):
         self.seed = seed
-        self.state_path = state_path or "bio_brain_state.json"
+        self.state_path = state_path or "cog_vec_state.json"
         self.ns = NervousSystem(seed=seed)
         self._build(n_sensory, n_inter, n_motor)
         # 子系统
@@ -62,6 +63,8 @@ class BioBrain:
         self.self_model = SelfModel()
         # ★语义编码器（自动选最优：真嵌入 或 n-gram 兜底）
         self.encoder = get_encoder()
+        # ★ALG-18 工作记忆：历史【编码】参与当前输入（BIO_WORKMEM=0 逐位回退）
+        self.workmem = WorkingMemory()
         # 端口
         self.sensory_symbol = SensoryPort("symbol", self.symbol_ids, D_SOMA)
         self.sensory_vision = SensoryPort("vision", self.vision_ids, D_SOMA)
@@ -205,7 +208,20 @@ class BioBrain:
         ign = self.sensory_symbol.ignite(vec, self.ns)
         self.active |= set(ign["ignited"])
         # 2. 跑思考流
-        self.run_ticks(12)
+        # ★ALG-18：历史【编码】在轮内再注入一次（本 tick 只读上一轮及更早的历史，
+        #   本轮编码在轮末才 push → 遵守 NORM-4 因果优先）
+        if self.workmem.enabled and len(self.workmem) > 0:
+            t_inj = min(self.workmem.inject_tick, WM_ROUND_TICKS - 1)
+            self.run_ticks(t_inj)
+            mixed = self.workmem.inject(vec)
+            if mixed is not None:
+                ign2 = self.sensory_symbol.ignite(mixed, self.ns)
+                self.active |= set(ign2["ignited"])
+            self.run_ticks(WM_ROUND_TICKS - t_inj)
+        else:
+            self.run_ticks(WM_ROUND_TICKS)
+        # ★ALG-18：轮末写入（供后续轮使用；禁用时是 no-op）
+        self.workmem.push(vec)
         # 3. 聚合状态，更新收敛度量
         state_vec = np.array([self.ns.neurons[i].activity
                               for i in sorted(self.active)]) if self.active else np.zeros(4)
@@ -420,7 +436,7 @@ class BioBrain:
 # HTTP API
 # ============================================================
 class BrainHTTPHandler(BaseHTTPRequestHandler):
-    brain: BioBrain = None      # 由 serve() 注入
+    brain: CogVec = None      # 由 serve() 注入
 
     def _send(self, code: int, obj: dict):
         body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
@@ -434,7 +450,7 @@ class BrainHTTPHandler(BaseHTTPRequestHandler):
         if self.path == "/state":
             self._send(200, self.brain.state())
         elif self.path == "/health":
-            self._send(200, {"ok": True, "version": BioBrain.STATE_VERSION})
+            self._send(200, {"ok": True, "version": CogVec.STATE_VERSION})
         else:
             self._send(404, {"error": "not found", "try": ["/state", "/health"]})
 
@@ -470,7 +486,7 @@ class BrainHTTPHandler(BaseHTTPRequestHandler):
 
 
 def serve(port: int = 8642, state_path: Optional[str] = None):
-    brain = BioBrain(state_path=state_path)
+    brain = CogVec(state_path=state_path)
     if brain.load():
         print(f"已加载历史状态: {state_path}")
     BrainHTTPHandler.brain = brain
@@ -497,13 +513,13 @@ def cli():
     ap.add_argument("--state", action="store_true", help="查看状态")
     ap.add_argument("--sleep", action="store_true", help="执行睡眠巩固")
     ap.add_argument("--demo", action="store_true", help="完整演示")
-    ap.add_argument("--state-file", type=str, default="bio_brain_state.json")
+    ap.add_argument("--state-file", type=str, default="cog_vec_state.json")
     args = ap.parse_args()
 
     if args.serve:
         return serve(args.port, args.state_file)
 
-    brain = BioBrain(state_path=args.state_file)
+    brain = CogVec(state_path=args.state_file)
     brain.load()
 
     if args.think:
@@ -517,11 +533,11 @@ def cli():
         demo(brain)
 
 
-def demo(brain: Optional[BioBrain] = None):
+def demo(brain: Optional[CogVec] = None):
     print("=" * 66)
-    print("  仿生 AI · 服务层演示（BioBrain）")
+    print("  仿生 AI · 服务层演示（CogVec）")
     print("=" * 66)
-    b = brain or BioBrain()
+    b = brain or CogVec()
     print("\n[初始状态]")
     print(json.dumps(b.state(), ensure_ascii=False, indent=1)[:600])
 

@@ -19,7 +19,7 @@
 
 **实测命令**：
 ```python
-b = BioBrain(seed=1); b.think("猫是哺乳动物")
+b = CogVec(seed=1); b.think("猫是哺乳动物")
 acts = np.array([n.activity for n in b.ns.neurons.values()])
 np.mean(acts > 0.1)   # → 0.9062
 ```

@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Tuple, Callable
 import numpy as np
 import time
 
-from bio_brain import (
+from cog_vec import (
     NervousSystem, Neuron, Tier, norm, top_k_mean, clamp,
     ACTIVE_EPS, NORM_CLIP,
 )
@@ -280,7 +280,7 @@ def demo():
     print("=" * 64)
     print("  仿生 AI · M3-M5 自训练闭环验证")
     print("=" * 64)
-    from bio_brain import SensoryPort, MotorPort
+    from cog_vec import SensoryPort, MotorPort
 
     rng = np.random.default_rng(7)
     ns = NervousSystem(seed=42)

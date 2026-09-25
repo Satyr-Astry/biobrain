@@ -70,25 +70,38 @@ class WebUISink:
         class H(BaseHTTPRequestHandler):
             protocol_version = "HTTP/1.1"
 
+            def _client_alive(self) -> bool:
+                """★轻量检查：客户端是否还在（避免对已关闭连接写响应）"""
+                try:
+                    return self.wfile is not None and not self.wfile.closed
+                except Exception:
+                    return False
+
+            def _safe_write(self, body: bytes, ctype: str, code: int = 200):
+                """★客户端断开（WinError 10053/10054）是正常现象，绝不能杀服务"""
+                try:
+                    self.send_response(code)
+                    self.send_header("Content-Type", ctype)
+                    self.send_header("Content-Length", str(len(body)))
+                    self.send_header("Access-Control-Allow-Origin", "*")
+                    self.end_headers()
+                    self.wfile.write(body)
+                except (ConnectionAbortedError, ConnectionResetError,
+                        BrokenPipeError, OSError):
+                    pass          # 浏览器刷新/关页 —— 静默忽略
+
             def _json(self, obj, code=200):
                 body = json.dumps(obj, ensure_ascii=False, default=str).encode()
-                self.send_response(code)
-                self.send_header("Content-Type", "application/json; charset=utf-8")
-                self.send_header("Content-Length", str(len(body)))
-                self.send_header("Access-Control-Allow-Origin", "*")
-                self.end_headers()
-                self.wfile.write(body)
+                self._safe_write(body, "application/json; charset=utf-8", code)
 
             def _html(self, text):
-                body = text.encode("utf-8")
-                self.send_response(200)
-                self.send_header("Content-Type", "text/html; charset=utf-8")
-                self.send_header("Content-Length", str(len(body)))
-                self.end_headers()
-                self.wfile.write(body)
+                self._safe_write(text.encode("utf-8"),
+                                 "text/html; charset=utf-8")
 
             def do_GET(self):
                 p = self.path.split("?")[0]
+                if not self._client_alive():
+                    return
                 try:
                     if p == "/":
                         self._html(PAGE)
@@ -143,7 +156,21 @@ class WebUISink:
             def log_message(self, *a):
                 pass
 
-        self._server = HTTPServer(("127.0.0.1", self.port), H)
+        class _QuietServer(HTTPServer):
+            """★客户端断开不打印堆栈、不中断服务"""
+            daemon_threads = True
+            allow_reuse_address = True
+
+            def handle_error(self, request, client_address):
+                import sys as _s
+                et, ev, _ = _s.exc_info()
+                if et and issubclass(et, (ConnectionAbortedError,
+                                          ConnectionResetError,
+                                          BrokenPipeError, OSError)):
+                    return          # 浏览器刷新/关页 —— 静默
+                super().handle_error(request, client_address)
+
+        self._server = _QuietServer(("127.0.0.1", self.port), H)
         threading.Thread(target=self._server.serve_forever, daemon=True).start()
 
 
@@ -160,7 +187,7 @@ def _call(fn):
 PAGE = r"""<!DOCTYPE html>
 <html lang="zh"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BioBrain Harness Platform</title>
+<title>CogVec Harness Platform</title>
 <style>
  :root{--bg:#0b0f14;--card:#131a23;--bd:#243040;--fg:#e6edf5;--mut:#8b9bb0;
        --acc:#4ec9b0;--warn:#e0af68;--err:#f7768e;--ok:#9ece6a}
@@ -207,7 +234,7 @@ PAGE = r"""<!DOCTYPE html>
 </style></head><body>
 <header>
   <span class="dot" id="dot"></span>
-  <h1>BioBrain · Harness Platform</h1>
+  <h1>CogVec · Harness Platform</h1>
   <span class="mut" id="hdr">连接中…</span>
   <span style="flex:1"></span>
   <span class="mut" id="poll">—</span>

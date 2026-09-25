@@ -107,8 +107,8 @@ def test_h05_tick_ms_is_per_tick_not_cumulative():
         "recorder": {"path": rec_path}})
     p.build()
     p.run(steps=12)
-    ms = [json.loads(l)["ms"] for l in open(rec_path, encoding="utf-8")
-          if '"tick"' in l]
+    evs = [json.loads(l) for l in open(rec_path, encoding="utf-8")]
+    ms = [e["ms"] for e in evs if e.get("ev") == "tick"]
     assert len(ms) == 12
     # 累计时间特征：严格单调递增且末值 >> 首值
     # 单 tick 耗时的特征：不单调，末值不会远大于首值
@@ -126,8 +126,8 @@ def test_h06_tick_ms_not_all_zero():
         "recorder": {"path": rec_path}})
     p.build()
     p.run(steps=6)
-    ms = [json.loads(l)["ms"] for l in open(rec_path, encoding="utf-8")
-          if '"tick"' in l]
+    evs = [json.loads(l) for l in open(rec_path, encoding="utf-8")]
+    ms = [e["ms"] for e in evs if e.get("ev") == "tick"]
     assert max(ms) > 0.5, f"ms 全为 0（埋点位置错）: {ms}"
 
 

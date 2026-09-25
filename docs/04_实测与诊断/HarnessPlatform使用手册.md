@@ -101,7 +101,7 @@ pipeline:
 | 项 | 目标 | 结果 |
 |---|---|---|
 | **可扩展性** | 新插件不改核心 | ✅ 实测（`countdown`/`upper`/`counter` 全部生效） |
-| **单实例** | HTTP+学习+睡眠同进程仅 1 个 BioBrain | ✅ `/state` 返回 `neurons: 64`，handle 唯一 |
+| **单实例** | HTTP+学习+睡眠同进程仅 1 个 CogVec | ✅ `/state` 返回 `neurons: 64`，handle 唯一 |
 | **HTTP 并发** | 端点可用 | ✅ 4/4（`/health` `/latest` `/results` `/state`） |
 | **回归** | pytest 仍 37 passed | 见 `验收报告` |
 | **开销** | <1.05× | 见 `验收报告` |

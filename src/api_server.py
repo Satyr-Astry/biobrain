@@ -1,29 +1,38 @@
 """
-仿生大脑 · OpenAI 兼容服务 (api_server.py)
-============================================
-让它表现得像一个标准 LLM —— 任何 OpenAI 客户端都能直连。
+仿生大脑 · OpenAI 兼容服务（api_server.py）
+==============================================
+★ v3.11 P0-C：本文件已**降级为薄代理层**（治 P-ARCH-14）。
 
-接口：
-    POST /v1/chat/completions     ← 聊天补全（含流式）
-    GET  /v1/models               ← 模型列表
-    POST /v1/embeddings           ← 嵌入（借用 encoder）
-    GET  /health                  ← 健康检查
-    GET  /brain/state             ← 大脑状态（私有扩展）
+背景（实测）：
+    8642（server.py）持 CogVec/NervousSystem（64 神经元，逐神经元）
+    8700（本文件）原持 Conductor/TensorBrain（16384 神经元，矩阵版）
+    → 两套引擎两个门面，路由重叠，**状态可能分裂**。
+    且两条路的后端协议不兼容：
+      · server.py has_generation_backend() 探 /health + /v1/chat/completions（OpenAI 兼容）
+      · cortex.LLMCortex._probe()        探 Ollama /api/tags
+    ⇒ 「导入路由」方案会造出**第二个 Conductor 实例**（正是要治的病），被证伪。
 
-设计：
-    · 神经认知层参与每轮对话（记忆召回 + 置信度调制）
-    · 语言由本地 LLM 生成，但**内容受大脑指挥**
-    · 纯标准库实现（http.server），零新依赖
+现行为（BIO_MERGE_HTTP=1，默认）：
+    全部路由**原样转发**到 BIO_AUTHORITATIVE_URL（默认 http://127.0.0.1:8642），
+    **不构造任何大脑实例** → 物理上不可能持有第二个大脑。
+
+回退（BIO_MERGE_HTTP=0）：
+    退回旧行为（自持 Conductor + TensorBrain + agent_memory.json）。
+    保留用于对比与紧急回滚。
+
+依赖：仅标准库（http.server + urllib），**不需要 flask**（实测本机未装 flask）。
 
 用法：
-    python api_server.py --port 8700
-    # 然后任何 OpenAI 客户端可连 http://127.0.0.1:8700/v1
+    python api_server.py --port 8700        # 代理到 8642（需先起 8642）
+    BIO_MERGE_HTTP=0 python api_server.py   # 回退：自持大脑
 """
 from __future__ import annotations
 import json
+import os
 import sys
 import time
-import threading
+import urllib.error
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Dict, List, Optional, Any
@@ -32,15 +41,23 @@ HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 
 MODEL_NAME = "bio-brain"
-SERVER_VERSION = "0.1.0"
+SERVER_VERSION = "0.2.0"
 
-# 全局大脑实例（懒加载）
+# ★v3.11 合并开关
+MERGE_HTTP = os.environ.get("BIO_MERGE_HTTP", "1").strip() != "0"
+AUTHORITATIVE_URL = os.environ.get(
+    "BIO_AUTHORITATIVE_URL", "http://127.0.0.1:8642").rstrip("/")
+
+# 全局大脑实例（★仅回退模式使用；合并模式下恒为 None）
 _BRAIN = None
-_BRAIN_LOCK = threading.Lock()
+_BRAIN_LOCK = __import__("threading").Lock()
 
 
 def get_brain():
-    """懒加载大脑（首次调用时构建）"""
+    """懒加载大脑（★仅回退模式调用；合并模式永不构造）。
+
+    注意：合并模式下本函数**不应被调用** —— 测试 C20 断言 `_BRAIN is None`。
+    """
     global _BRAIN
     if _BRAIN is None:
         with _BRAIN_LOCK:
@@ -65,6 +82,41 @@ def get_brain():
                     print(f"[warn] 大脑加载失败: {e}", file=sys.stderr)
                     _BRAIN = None
     return _BRAIN
+
+
+def proxy_available() -> bool:
+    """权威服务是否可达（用于启动提示与 502 诊断）"""
+    try:
+        with urllib.request.urlopen(AUTHORITATIVE_URL + "/health", timeout=1.0):
+            return True
+    except Exception:
+        return False
+
+
+def forward(method: str, path: str, body: bytes, headers: dict):
+    """把请求原样转发到权威服务，返回 (status, content_type, body)。
+
+    ★关键：**不做任何本地大脑计算**，也**不缓存状态** —— 状态唯一来源是 8642。
+    """
+    req = urllib.request.Request(
+        AUTHORITATIVE_URL + path, data=(body if method == "POST" else None),
+        method=method,
+        headers={"Content-Type": headers.get("Content-Type",
+                                             "application/json")})
+    try:
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            return resp.status, resp.headers.get("Content-Type",
+                                                 "application/json"), resp.read()
+    except urllib.error.HTTPError as e:
+        return e.code, e.headers.get("Content-Type", "application/json"), e.read()
+    except Exception as e:
+        msg = json.dumps({
+            "error": {
+                "message": f"权威服务不可达 ({AUTHORITATIVE_URL}): {type(e).__name__}: {e}",
+                "hint": "请先启动 python server.py --serve（端口 8642）",
+            }
+        }, ensure_ascii=False).encode()
+        return 502, "application/json; charset=utf-8", msg
 
 
 def sse(obj: dict) -> bytes:
@@ -97,8 +149,25 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         pass   # 静默（自己记日志）
 
+    def _relay(self, method: str):
+        """★v3.11：合并模式 —— 原样转发到权威服务"""
+        raw = b""
+        n = int(self.headers.get("Content-Length", 0))
+        if n:
+            raw = self.rfile.read(n)
+        status, ctype, body = forward(method, self.path, raw, dict(self.headers))
+        self.send_response(status)
+        self.send_header("Content-Type", ctype or "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("X-Bio-Proxy-To", AUTHORITATIVE_URL)
+        self.end_headers()
+        self.wfile.write(body)
+
     # ---------------- GET ----------------
     def do_GET(self):
+        if MERGE_HTTP:
+            return self._relay("GET")
         if self.path.startswith("/v1/models"):
             self._send_json({
                 "object": "list",
@@ -109,14 +178,13 @@ class Handler(BaseHTTPRequestHandler):
             })
         elif self.path.startswith("/health"):
             self._send_json({"status": "ok", "model": MODEL_NAME,
-                             "version": SERVER_VERSION})
+                             "version": SERVER_VERSION, "merged_http": False})
         elif self.path.startswith("/brain/state"):
             b = get_brain()
             if b is None:
                 self._send_json({"error": "brain not loaded"}, 503)
             else:
                 s = b.stats()
-                # ★补上记忆条数（Conductor.stats 不含 memory）
                 s["memory"] = len(getattr(b, "memory", []))
                 s["llm"] = {"model": getattr(b.llm, "model", None),
                             "available": bool(b.llm and b.llm.available)}
@@ -126,6 +194,8 @@ class Handler(BaseHTTPRequestHandler):
 
     # ---------------- POST ----------------
     def do_POST(self):
+        if MERGE_HTTP:
+            return self._relay("POST")
         if self.path.startswith("/v1/chat/completions"):
             self._chat()
         elif self.path.startswith("/v1/embeddings"):
@@ -135,13 +205,12 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self._send_json({"error": {"message": "not found"}}, 404)
 
-    # ---------------- 核心：聊天补全 ----------------
+    # ---------------- 回退模式：核心聊天补全 ----------------
     def _chat(self):
         req = self._read_body()
         messages = req.get("messages") or []
         stream = bool(req.get("stream"))
 
-        # 取最后一条 user 消息
         user_text = ""
         for m in reversed(messages):
             if m.get("role") == "user":
@@ -163,8 +232,6 @@ class Handler(BaseHTTPRequestHandler):
                     "convergence": r.get("convergence"),
                 }
                 if not content:
-                    # ★修正：大脑"不说"≠"不会"。让语言区以最保守的方式回答，
-                    #   而不是回一句死板的模板（否则用户以为坏了）
                     try:
                         content = brain.llm.generate(
                             user_text,
@@ -175,7 +242,6 @@ class Handler(BaseHTTPRequestHandler):
                         content = "（暂时无法回答）"
                         meta["abstained"] = True
             except Exception as e:
-                # ★暴露完整堆栈（之前静默吞异常导致 19ms 假响应）
                 import traceback
                 tb = traceback.format_exc()
                 print(f"[brain-error] {type(e).__name__}: {e}\n{tb}",
@@ -195,21 +261,19 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Cache-Control", "no-cache")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            # 首块含角色
             self.wfile.write(sse({"id": cid, "object": "chat.completion.chunk",
                                   "created": int(time.time()), "model": MODEL_NAME,
                                   "choices": [{"index": 0,
                                                "delta": {"role": "assistant"}}]}))
-            # 分块输出
             for i in range(0, len(content), 12):
                 self.wfile.write(sse({
                     "id": cid, "object": "chat.completion.chunk",
                     "created": int(time.time()), "model": MODEL_NAME,
                     "choices": [{"index": 0, "delta": {"content": content[i:i+12]}}]}))
-            # 结束
             self.wfile.write(sse({"id": cid, "object": "chat.completion.chunk",
                                   "created": int(time.time()), "model": MODEL_NAME,
-                                  "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}]}))
+                                  "choices": [{"index": 0, "delta": {},
+                                               "finish_reason": "stop"}]}))
             self.wfile.write(b"data: [DONE]\n\n")
             return
 
@@ -226,7 +290,7 @@ class Handler(BaseHTTPRequestHandler):
                 "completion_tokens": len(content),
                 "total_tokens": len(user_text) + len(content),
             },
-            "bio_brain": {**meta, "latency_ms": latency},
+            "cog_vec": {**meta, "latency_ms": latency},
         })
 
     def _embeddings(self):
@@ -267,23 +331,29 @@ def main():
     ap = argparse.ArgumentParser(description="仿生大脑 OpenAI 兼容服务")
     ap.add_argument("--port", type=int, default=8700)
     ap.add_argument("--host", default="127.0.0.1")
-    ap.add_argument("--preload", action="store_true", help="启动时预载大脑")
+    ap.add_argument("--preload", action="store_true", help="启动时预载大脑（仅回退模式）")
     args = ap.parse_args()
 
     print("=" * 66)
     print("  仿生大脑 · OpenAI 兼容服务")
     print("=" * 66)
-    print(f"  Base URL: http://{args.host}:{args.port}/v1")
-    print(f"  模型名:   {MODEL_NAME}")
-    print(f"  端点:     /v1/chat/completions  /v1/models  /v1/embeddings")
-    print()
 
-    if args.preload:
-        print("  预载大脑…")
-        t0 = time.time()
-        b = get_brain()
-        print(f"  完成 ({time.time()-t0:.1f}s) | {b.stats() if b else '失败'}")
-        print()
+    if MERGE_HTTP:
+        print("  模式:     ★合并（薄代理，不持大脑实例）")
+        print(f"  转发目标: {AUTHORITATIVE_URL}  ← 唯一权威")
+        print(f"  Base URL: http://{args.host}:{args.port}/v1")
+        ok = proxy_available()
+        print(f"  权威服务: {'✓ 可达' if ok else '✗ 不可达 —— 请先启动 python server.py --serve'}")
+        print("  提示:     设 BIO_MERGE_HTTP=0 可退回旧的自持大脑模式")
+    else:
+        print("  模式:     回退（自持 Conductor/TensorBrain）")
+        print(f"  Base URL: http://{args.host}:{args.port}/v1")
+        if args.preload:
+            print("  预载大脑…")
+            t0 = time.time()
+            b = get_brain()
+            print(f"  完成 ({time.time()-t0:.1f}s) | {b.stats() if b else '失败'}")
+    print()
 
     srv = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"  服务已启动，Ctrl+C 停止")

@@ -5,7 +5,7 @@ HarnessPlatform · 核心数据类型
 
 设计原则：
   · 全部是**纯数据**（dataclass），无行为 → 易序列化、易测试
-  · 不依赖 BioBrain（平台内核与大脑解耦）
+  · 不依赖 CogVec（平台内核与大脑解耦）
 """
 from __future__ import annotations
 from dataclasses import dataclass, field, asdict

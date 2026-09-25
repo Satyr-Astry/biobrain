@@ -11,7 +11,7 @@ from .registry import processor
 
 
 def _brain_of(obj: Any) -> Any:
-    """兼容：既接受 BrainHandle（有 .think）也接受裸 BioBrain"""
+    """兼容：既接受 BrainHandle（有 .think）也接受裸 CogVec"""
     return obj
 
 

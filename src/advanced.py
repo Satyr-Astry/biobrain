@@ -357,7 +357,7 @@ def demo():
 
     # ---- M8 ----
     print("\n[M8] 符号接地（共激活 + 因果验证 + 五维剖面）...")
-    from bio_brain import NervousSystem
+    from cog_vec import NervousSystem
     ns = NervousSystem(seed=11)
     symbols = [ns.add_neuron("sensory") for _ in range(3)]
     envs = [ns.add_neuron("sensory") for _ in range(3)]

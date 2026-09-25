@@ -1,4 +1,4 @@
-# BioBrain Harness Platform · 架构设计（v1.0）
+# CogVec Harness Platform · 架构设计（v1.0）
 
 > 落笔：2026-09-19
 > 状态：**设计稿**（NORM-8：先改架构书，确认后才写代码）
@@ -29,7 +29,7 @@
 ### 1.2 三个具体痛点（实测）
 
 **痛点 1：无法组合**
-想"边跑边学 + 同时提供 HTTP + 定期睡眠"→ 要**同时开 3 个进程**，**各自持有独立的 BioBrain 实例** → **状态分裂**（P-ARCH-1 的同源病）。
+想"边跑边学 + 同时提供 HTTP + 定期睡眠"→ 要**同时开 3 个进程**，**各自持有独立的 CogVec 实例** → **状态分裂**（P-ARCH-1 的同源病）。
 
 **痛点 2：加新能力要改核心代码**
 `harness.py` 的 `tick()` 里**硬编码**了：
@@ -60,7 +60,7 @@ if self.cycle % 10 == 0:             # 报告周期写死 10
                     │      HarnessPlatform (单例)          │
                     │  ┌───────────────────────────────┐  │
                     │  │   BrainHandle                 │  │
-                    │  │   （唯一的 BioBrain 实例）     │  │
+                    │  │   （唯一的 CogVec 实例）     │  │
                     │  └───────────────────────────────┘  │
                     │                                     │
                     │   Pipeline（声明式组装）              │
@@ -181,7 +181,7 @@ platform/
   __init__.py
   context.py      # TickContext / Stimulus / Result
   protocols.py    # 4 个 Protocol
-  brain_handle.py # 唯一 BioBrain 实例 + 线程安全
+  brain_handle.py # 唯一 CogVec 实例 + 线程安全
   pipeline.py     # 组装 + 驱动
   recorder.py     # 统一观测
   registry.py     # 插件注册表（type 字符串 → 类）
@@ -224,7 +224,7 @@ platform/
 | 项 | 目标 |
 |---|---|
 | **可扩展性** | 新增一个 Source **只需写一个类 + 注册**，**不改平台核心** |
-| **组合能力** | 同一进程内 **HTTP + 学习 + 睡眠** 并行，**只 1 个 BioBrain 实例** |
+| **组合能力** | 同一进程内 **HTTP + 学习 + 睡眠** 并行，**只 1 个 CogVec 实例** |
 | **等价性** | 用平台跑 30 步，与 `harness.py --once 30` 的**行为等价**（同 seed 同输入→同收敛序列） |
 | **回归** | `pytest test_bio_brain.py` **仍 37 passed** |
 | **可观测** | 统一 `recorder.jsonl`，含每 tick 的 source/processor/policy 来源标记 |
@@ -239,4 +239,4 @@ platform/
 | 平台变成"又一个入口" | 明确目标：**是收敛器，不是第 14 个** |
 | 抽象过度 | 阶段 1 只做**最小可用**（4 协议 + 3 内置实现） |
 | 性能开销 | tick 级插件的开销**实测 < 5%**（否则回退） |
-| 线程安全 | BioBrain 非线程安全 → `BrainHandle` 用**单锁**串行化 |
+| 线程安全 | CogVec 非线程安全 → `BrainHandle` 用**单锁**串行化 |
