@@ -595,7 +595,7 @@ L_semantic = D( Enc("猫是哺乳动物"),     Enc("哺乳动物是猫") )
 # 附录 B · 实测命令（可复现）
 
 ```python
-# cd E:/BIONIC_AI/code && PYTHONHASHSEED=0 python
+# cd E:/CogVec/code && PYTHONHASHSEED=0 python
 import sys; sys.path.insert(0, ".")
 from encoder import get_encoder
 import numpy as np

@@ -1,6 +1,6 @@
 
 import os, sys
-sys.path.insert(0, "E:/BIONIC_AI/code")
+sys.path.insert(0, "E:/CogVec/code")
 import numpy as np
 from server import CogVec
 import cog_vec as bb
